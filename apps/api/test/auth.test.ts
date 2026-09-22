@@ -1,4 +1,4 @@
-import { createHmac, createSign } from "node:crypto";
+import { createHmac, createSign, generateKeyPairSync } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { TenantId } from "@li-erikes/domain";
 import { buildApp } from "../src/app";
@@ -12,19 +12,12 @@ const tenantA = "00000000-0000-4000-8000-000000000001" as TenantId;
 const tenantB = "00000000-0000-4000-8000-000000000002" as TenantId;
 const technicianId = "00000000-0000-4000-8000-000000000010";
 const customerId = "00000000-0000-4000-8000-000000000011";
-const es256PrivateKey = `-----BEGIN PRIVATE KEY-----
-MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgWW3kvFmhEUEqEkmt
-C1mwXdyNHuQC0V+HfQV16UQMB+uhRANCAARX1kCb0r0xMDE177je04ynQR8GwOWF
-KDWqRhL9wDHkUndcxPZugjJ9pEVTTyez6R13LbY18MeCvPuzKwCoeePh
------END PRIVATE KEY-----`;
+const es256KeyPair = generateKeyPairSync("ec", { namedCurve: "P-256" });
 const es256Jwks = {
   keys: [
     {
-      crv: "P-256",
       kid: "test-es256-key",
-      kty: "EC",
-      x: "V9ZAm9K9MTAxNe-43tOMp0EfBsDlhSg1qkYS_cAx5FI",
-      y: "d1zE9m6CMn2kRVNPJ7PpHXcttjXwx4K8-7MrAKh54-E",
+      ...es256KeyPair.publicKey.export({ format: "jwk" }),
     },
   ],
 };
@@ -76,7 +69,7 @@ function signEs256Token(
   signer.end();
   const signature = signer.sign({
     dsaEncoding: "ieee-p1363",
-    key: es256PrivateKey,
+    key: es256KeyPair.privateKey,
   });
   return `${input}.${signature.toString("base64url")}`;
 }
