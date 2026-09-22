@@ -1,0 +1,15 @@
+{
+  "name": "@li-erikes/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint src test",
+    "typecheck": "tsc --project ../../tsconfig.base.json",
+    "test": "vitest run",
+    "build": "tsc --declaration --esModuleInterop --module NodeNext --moduleResolution NodeNext --outDir dist --rootDir src --skipLibCheck --target ES2024 src/app.ts src/server.ts"
+  },
+  "dependencies": {
+    "fastify": "^5.0.0"
+  }
+}

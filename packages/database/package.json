@@ -1,0 +1,17 @@
+{
+  "name": "@li-erikes/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint src test",
+    "typecheck": "tsc --project ../../tsconfig.base.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@li-erikes/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8"
+  }
+}

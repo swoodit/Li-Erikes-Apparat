@@ -1,0 +1,12 @@
+{
+  "name": "@li-erikes/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint src test",
+    "typecheck": "tsc --project ../../tsconfig.base.json",
+    "test": "vitest run"
+  }
+}

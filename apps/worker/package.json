@@ -1,0 +1,11 @@
+{
+  "name": "@li-erikes/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc --project ../../tsconfig.base.json",
+    "build": "tsc --declaration --esModuleInterop --module NodeNext --moduleResolution NodeNext --outDir dist --rootDir src --skipLibCheck --target ES2024 src/main.ts"
+  }
+}
