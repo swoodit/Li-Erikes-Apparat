@@ -1,4 +1,4 @@
-import { CurrencyMismatchError, InvalidMoneyError } from "./errors";
+import { CurrencyMismatchError, InvalidMoneyError } from "./errors.js";
 
 export type Money<C extends string = string> = Readonly<{
   currency: C;

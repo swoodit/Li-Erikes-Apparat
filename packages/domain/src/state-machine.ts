@@ -1,4 +1,4 @@
-import { InvalidTransitionError } from "./errors";
+import { InvalidTransitionError } from "./errors.js";
 
 export type TransitionTable = Readonly<
   Record<PropertyKey, Readonly<Record<PropertyKey, PropertyKey>>>

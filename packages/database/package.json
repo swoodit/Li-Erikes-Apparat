@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./schema/organisation": "./src/schema/organisation.ts"
+  },
   "scripts": {
     "lint": "eslint src test",
     "typecheck": "tsc --project ../../tsconfig.base.json",

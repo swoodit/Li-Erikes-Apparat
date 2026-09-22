@@ -10,6 +10,10 @@
     "build": "tsc --declaration --esModuleInterop --module NodeNext --moduleResolution NodeNext --outDir dist --rootDir src --skipLibCheck --target ES2024 src/app.ts src/server.ts"
   },
   "dependencies": {
-    "fastify": "^5.0.0"
+    "@li-erikes/contracts": "workspace:*",
+    "@li-erikes/database": "workspace:*",
+    "@li-erikes/domain": "workspace:*",
+    "fastify": "^5.0.0",
+    "jose": "^6.2.12"
   }
 }
