@@ -28,8 +28,16 @@ describe("comparePartOffers", () => {
     const result = comparePartOffers(
       [
         offer("slow", { priceMinor: 10_000, deliveryDays: 4 }),
-        offer("fast", { priceMinor: 9_500, shippingMinor: 500, deliveryDays: 1 }),
-        offer("cheapest", { priceMinor: 9_000, shippingMinor: 500, deliveryDays: 3 }),
+        offer("fast", {
+          priceMinor: 9_500,
+          shippingMinor: 500,
+          deliveryDays: 1,
+        }),
+        offer("cheapest", {
+          priceMinor: 9_000,
+          shippingMinor: 500,
+          deliveryDays: 3,
+        }),
       ],
       now,
       180,
@@ -37,9 +45,7 @@ describe("comparePartOffers", () => {
 
     expect(result.map((item) => item.id)).toEqual(["cheapest", "fast", "slow"]);
     expect(result.map((item) => item.deliveredPriceMinor)).toEqual([
-      9_500,
-      10_000,
-      10_000,
+      9_500, 10_000, 10_000,
     ]);
     expect(result[0]?.rank).toBe(1);
     expect(result[1]?.rank).toBe(2);
@@ -59,13 +65,15 @@ describe("comparePartOffers", () => {
 
     expect(result.slice(0, 1).map((item) => item.id)).toEqual(["ready"]);
     expect(result.slice(1).every((item) => item.rank === null)).toBe(true);
-    expect(result.find((item) => item.id === "unknown-fitment")?.reason).toMatch(
-      /fitment/i,
-    );
+    expect(
+      result.find((item) => item.id === "unknown-fitment")?.reason,
+    ).toMatch(/fitment/i);
     expect(result.find((item) => item.id === "out-of-stock")?.reason).toMatch(
       /stock/i,
     );
-    expect(result.find((item) => item.id === "stale")?.reason).toMatch(/stale/i);
+    expect(result.find((item) => item.id === "stale")?.reason).toMatch(
+      /stale/i,
+    );
   });
 
   it("allows sample offers in the comparison preview but never marks them orderable", () => {
@@ -82,10 +90,12 @@ describe("comparePartOffers", () => {
 
   it("does not mark a live or manually sourced offer orderable when it is stale", () => {
     const result = comparePartOffers(
-      [offer("stale-live", {
+      [
+        offer("stale-live", {
           source: "live",
           observedAt: "2026-09-29T08:00:00.000Z",
-        })],
+        }),
+      ],
       now,
       180,
     );
