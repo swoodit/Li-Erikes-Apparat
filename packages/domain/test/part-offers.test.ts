@@ -82,7 +82,10 @@ describe("comparePartOffers", () => {
 
   it("does not mark a live or manually sourced offer orderable when it is stale", () => {
     const result = comparePartOffers(
-      [offer("stale-live", { source: "live", observedAt: "2026-09-29T08:00:00.000Z" })],
+      [offer("stale-live", {
+          source: "live",
+          observedAt: "2026-09-29T08:00:00.000Z",
+        })],
       now,
       180,
     );
