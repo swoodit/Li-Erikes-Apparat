@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./part-offers": "./src/part-offers.ts"
+  },
   "scripts": {
     "lint": "eslint src test",
     "typecheck": "tsc --project ../../tsconfig.base.json",

@@ -103,4 +103,46 @@ describe("comparePartOffers", () => {
     expect(result[0]?.rank).toBeNull();
     expect(result[0]?.orderable).toBe(false);
   });
+
+  it("allows ordering only for eligible live supplier offers", () => {
+    const result = comparePartOffers(
+      [
+        offer("manual", { source: "manual" }),
+        offer("live", { source: "live" }),
+      ],
+      now,
+      180,
+    );
+
+    expect(result.find((item) => item.id === "live")?.orderable).toBe(true);
+    expect(result.find((item) => item.id === "manual")?.orderable).toBe(false);
+  });
+
+  it("excludes offers with invalid price, delivery estimate, or timestamp", () => {
+    const result = comparePartOffers(
+      [
+        offer("negative-price", { priceMinor: -1 }),
+        offer("missing-delivery", { deliveryDays: Number.NaN }),
+        offer("invalid-time", { observedAt: "not-a-time" }),
+        offer("future-time", { observedAt: "2026-09-29T12:01:00.000Z" }),
+      ],
+      now,
+      180,
+    );
+
+    expect(result.every((item) => item.rank === null)).toBe(true);
+    expect(result.every((item) => item.orderable === false)).toBe(true);
+    expect(result.find((item) => item.id === "negative-price")?.reason).toMatch(
+      /price/i,
+    );
+    expect(
+      result.find((item) => item.id === "missing-delivery")?.reason,
+    ).toMatch(/delivery/i);
+    expect(result.find((item) => item.id === "invalid-time")?.reason).toMatch(
+      /freshness/i,
+    );
+    expect(result.find((item) => item.id === "future-time")?.reason).toMatch(
+      /future/i,
+    );
+  });
 });
