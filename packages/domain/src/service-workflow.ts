@@ -68,11 +68,7 @@ export const appointmentTransitions = {
 } as const;
 
 export type AppointmentStatus = keyof typeof appointmentTransitions;
-export type AppointmentEvent =
-  | "confirm"
-  | "cancel"
-  | "complete"
-  | "markNoShow";
+export type AppointmentEvent = "confirm" | "cancel" | "complete" | "markNoShow";
 
 export function transitionAppointment(
   status: AppointmentStatus,
