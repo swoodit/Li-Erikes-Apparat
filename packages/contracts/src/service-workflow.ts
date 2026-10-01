@@ -254,7 +254,9 @@ export const StaffReviewDecisionSchema = z.discriminatedUnion("action", [
     .strict(),
 ]);
 
-export type CustomerBookingRequest = z.infer<typeof CustomerBookingRequestSchema>;
+export type CustomerBookingRequest = z.infer<
+  typeof CustomerBookingRequestSchema
+>;
 export type PublicRequestStatus = z.infer<typeof PublicRequestStatusSchema>;
 export type PartOfferObservationContract = z.infer<
   typeof PartOfferObservationSchema
