@@ -14,12 +14,7 @@ export type PartOfferCandidate = {
 };
 
 export type PartOfferResultState =
-  | "current"
-  | "stale"
-  | "unavailable"
-  | "unknown"
-  | "no_match"
-  | "out_of_stock";
+  "current" | "stale" | "unavailable" | "unknown" | "no_match" | "out_of_stock";
 
 type LivePartOfferObservationInput = Readonly<{
   source: "live";
@@ -38,8 +33,7 @@ type NonLivePartOfferObservationInput = Readonly<{
 }>;
 
 export type PartOfferObservationInput =
-  | LivePartOfferObservationInput
-  | NonLivePartOfferObservationInput;
+  LivePartOfferObservationInput | NonLivePartOfferObservationInput;
 
 export type PartOfferObservation = PartOfferObservationInput;
 
