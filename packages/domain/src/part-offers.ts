@@ -50,7 +50,10 @@ export type ComparedPartOffer = PartOfferCandidate & {
   reason: string | null;
 };
 
-/** Validate a provider observation without turning missing data into an empty success. */
+/**
+ * Validate a provider observation without turning missing data into an empty
+ * success.
+ */
 export function createPartOfferObservation(
   input: PartOfferObservationInput,
 ): PartOfferObservation {
@@ -62,7 +65,9 @@ export function createPartOfferObservation(
     input.source === "live" &&
     (!input.retrievedAt || !Number.isFinite(Date.parse(input.retrievedAt)))
   ) {
-    throw new RangeError("Live offer observations require a valid retrieval time");
+    throw new RangeError(
+      "Live offer observations require a valid retrieval time",
+    );
   }
 
   if (
@@ -76,7 +81,9 @@ export function createPartOfferObservation(
     (input.state === "current" || input.state === "stale") &&
     input.offers.length === 0
   ) {
-    throw new RangeError(`${input.state} offer observations require at least one offer`);
+    throw new RangeError(
+      `${input.state} offer observations require at least one offer`,
+    );
   }
 
   if (
@@ -90,7 +97,9 @@ export function createPartOfferObservation(
     input.state === "out_of_stock" &&
     input.offers.some((offer) => offer.availability === "in_stock")
   ) {
-    throw new RangeError("Out-of-stock observations cannot include in-stock offers");
+    throw new RangeError(
+      "Out-of-stock observations cannot include in-stock offers",
+    );
   }
 
   if (input.offers.some((offer) => offer.source !== input.source)) {
