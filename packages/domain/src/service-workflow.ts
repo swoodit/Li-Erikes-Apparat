@@ -36,15 +36,23 @@ export const serviceRequestTransitions = {
 } as const;
 
 export type ServiceRequestStatus = keyof typeof serviceRequestTransitions;
-export type ServiceRequestEvent = {
-  [Status in ServiceRequestStatus]: keyof (typeof serviceRequestTransitions)[Status];
-}[ServiceRequestStatus];
+export type ServiceRequestEvent =
+  | "beginReview"
+  | "offerRevision"
+  | "acceptRevision"
+  | "confirm"
+  | "decline"
+  | "cancel";
 
 export function transitionServiceRequest(
   status: ServiceRequestStatus,
   event: ServiceRequestEvent,
 ): ServiceRequestStatus {
-  return transition(status, event, serviceRequestTransitions) as ServiceRequestStatus;
+  return transition(
+    status,
+    event,
+    serviceRequestTransitions,
+  ) as ServiceRequestStatus;
 }
 
 export const appointmentTransitions = {
@@ -60,9 +68,11 @@ export const appointmentTransitions = {
 } as const;
 
 export type AppointmentStatus = keyof typeof appointmentTransitions;
-export type AppointmentEvent = {
-  [Status in AppointmentStatus]: keyof (typeof appointmentTransitions)[Status];
-}[AppointmentStatus];
+export type AppointmentEvent =
+  | "confirm"
+  | "cancel"
+  | "complete"
+  | "markNoShow";
 
 export function transitionAppointment(
   status: AppointmentStatus,
@@ -115,7 +125,9 @@ function markupMinor(subtotalMinor: number, basisPoints: number): number {
   return safeMinor(rounded, "Markup");
 }
 
-/** Calculate itemized supplier cost, markup, labor, and customer price in SEK. */
+/**
+ * Calculate itemized supplier cost, markup, labor, and customer price in SEK.
+ */
 export function calculateQuote(
   lines: readonly QuoteLineInput[],
   labor: Money<"SEK">,
@@ -131,7 +143,9 @@ export function calculateQuote(
   const calculatedLines = lines.map((line) => {
     const description = line.description.trim();
     if (description.length === 0 || description.length > 200) {
-      throw new RangeError("Quote line description must contain 1 to 200 characters");
+      throw new RangeError(
+        "Quote line description must contain 1 to 200 characters",
+      );
     }
 
     if (!Number.isSafeInteger(line.quantity) || line.quantity <= 0) {
