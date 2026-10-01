@@ -13,12 +13,96 @@ export type PartOfferCandidate = {
   source: PartOfferSource;
 };
 
+export type PartOfferResultState =
+  | "current"
+  | "stale"
+  | "unavailable"
+  | "unknown"
+  | "no_match"
+  | "out_of_stock";
+
+type LivePartOfferObservationInput = Readonly<{
+  source: "live";
+  sourceName: string;
+  state: PartOfferResultState;
+  retrievedAt: string;
+  offers: readonly PartOfferCandidate[];
+}>;
+
+type NonLivePartOfferObservationInput = Readonly<{
+  source: "manual" | "sample";
+  sourceName: string;
+  state: PartOfferResultState;
+  retrievedAt?: string;
+  offers: readonly PartOfferCandidate[];
+}>;
+
+export type PartOfferObservationInput =
+  | LivePartOfferObservationInput
+  | NonLivePartOfferObservationInput;
+
+export type PartOfferObservation = PartOfferObservationInput;
+
 export type ComparedPartOffer = PartOfferCandidate & {
   deliveredPriceMinor: number | null;
   rank: number | null;
   orderable: boolean;
   reason: string | null;
 };
+
+/** Validate a provider observation without turning missing data into an empty success. */
+export function createPartOfferObservation(
+  input: PartOfferObservationInput,
+): PartOfferObservation {
+  if (input.sourceName.trim().length === 0) {
+    throw new RangeError("Offer source name is required");
+  }
+
+  if (
+    input.source === "live" &&
+    (!input.retrievedAt || !Number.isFinite(Date.parse(input.retrievedAt)))
+  ) {
+    throw new RangeError("Live offer observations require a valid retrieval time");
+  }
+
+  if (
+    input.retrievedAt !== undefined &&
+    !Number.isFinite(Date.parse(input.retrievedAt))
+  ) {
+    throw new RangeError("Offer retrieval time must be a valid date");
+  }
+
+  if (
+    (input.state === "current" || input.state === "stale") &&
+    input.offers.length === 0
+  ) {
+    throw new RangeError(`${input.state} offer observations require at least one offer`);
+  }
+
+  if (
+    (input.state === "unavailable" || input.state === "no_match") &&
+    input.offers.length > 0
+  ) {
+    throw new RangeError(`${input.state} observations cannot include offers`);
+  }
+
+  if (
+    input.state === "out_of_stock" &&
+    input.offers.some((offer) => offer.availability === "in_stock")
+  ) {
+    throw new RangeError("Out-of-stock observations cannot include in-stock offers");
+  }
+
+  if (input.offers.some((offer) => offer.source !== input.source)) {
+    throw new RangeError("Offer source kind must match its observation");
+  }
+
+  return {
+    ...input,
+    sourceName: input.sourceName.trim(),
+    offers: [...input.offers],
+  };
+}
 
 /**
  * Rank offers that are safe to compare, while retaining excluded offers and
