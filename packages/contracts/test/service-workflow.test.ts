@@ -22,14 +22,11 @@ const validBooking = {
 };
 
 describe("customer booking contracts", () => {
-  it(
-    "accepts a valid request while leaving the requested slot unconfirmed",
-    () => {
-      expect(
-        CustomerBookingRequestSchema.safeParse(validBooking).success,
-      ).toBe(true);
-    },
-  );
+  it("accepts a valid request while leaving the requested slot unconfirmed", () => {
+    expect(CustomerBookingRequestSchema.safeParse(validBooking).success).toBe(
+      true,
+    );
+  });
 
   it("requires a contact route and a positive time range", () => {
     expect(
