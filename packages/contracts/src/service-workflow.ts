@@ -2,11 +2,7 @@ import { z } from "zod";
 
 const IdentifierSchema = z.string().trim().min(1).max(128);
 const IsoDateTimeSchema = z.iso.datetime({ offset: true });
-const MoneyMinorSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(Number.MAX_SAFE_INTEGER);
+const MoneyMinorSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 
 export const ServiceTypeSchema = z.enum([
   "seasonal_tyres",
