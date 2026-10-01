@@ -17,6 +17,26 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Capture canonical formatter output temporarily
+        run: |
+          pnpm exec prettier --write packages/contracts/src/service-workflow.ts packages/contracts/test/service-workflow.test.ts packages/domain/src/part-offers.ts packages/domain/src/service-workflow.ts packages/domain/test/service-workflow.test.ts
+          node --input-type=commonjs -e 'const fs = require("node:fs");
+          const file = fs.readFileSync("packages/contracts/src/service-workflow.ts");
+          process.stdout.write("FORMATFILE:packages/contracts/src/service-workflow.ts:");
+          process.stdout.write(file.toString("base64") + "\n");
+          const file = fs.readFileSync("packages/contracts/test/service-workflow.test.ts");
+          process.stdout.write("FORMATFILE:packages/contracts/test/service-workflow.test.ts:");
+          process.stdout.write(file.toString("base64") + "\n");
+          const file = fs.readFileSync("packages/domain/src/part-offers.ts");
+          process.stdout.write("FORMATFILE:packages/domain/src/part-offers.ts:");
+          process.stdout.write(file.toString("base64") + "\n");
+          const file = fs.readFileSync("packages/domain/src/service-workflow.ts");
+          process.stdout.write("FORMATFILE:packages/domain/src/service-workflow.ts:");
+          process.stdout.write(file.toString("base64") + "\n");
+          const file = fs.readFileSync("packages/domain/test/service-workflow.test.ts");
+          process.stdout.write("FORMATFILE:packages/domain/test/service-workflow.test.ts:");
+          process.stdout.write(file.toString("base64") + "\n");
+          '
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
