@@ -17,10 +17,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Capture canonical formatter output temporarily
-        run: |
-          pnpm exec prettier --write packages/contracts/src/service-workflow.ts packages/contracts/test/service-workflow.test.ts packages/domain/src/part-offers.ts packages/domain/src/service-workflow.ts packages/domain/test/service-workflow.test.ts
-          node -e 'const fs=require("node:fs"); for (const p of ["packages/contracts/src/service-workflow.ts","packages/contracts/test/service-workflow.test.ts","packages/domain/src/part-offers.ts","packages/domain/src/service-workflow.ts","packages/domain/test/service-workflow.test.ts"]) console.log("FORMATFILE:"+p+":"+fs.readFileSync(p).toString("base64"))'
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
