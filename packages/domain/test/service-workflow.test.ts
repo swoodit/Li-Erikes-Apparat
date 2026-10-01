@@ -27,26 +27,23 @@ const candidate: PartOfferCandidate = {
 };
 
 describe("service request lifecycle", () => {
-  it(
-    "requires customer acceptance of a revision before staff confirmation",
-    () => {
-      expect(
-        transitionServiceRequest("requested", "beginReview"),
-      ).toBe("under_review");
-      expect(
-        transitionServiceRequest("under_review", "offerRevision"),
-      ).toBe("revision_offered");
-      expect(
-        () => transitionServiceRequest("revision_offered", "confirm"),
-      ).toThrow(InvalidTransitionError);
-      expect(
-        transitionServiceRequest("revision_offered", "acceptRevision"),
-      ).toBe("customer_accepted");
-      expect(
-        transitionServiceRequest("customer_accepted", "confirm"),
-      ).toBe("confirmed");
-    },
-  );
+  it("requires customer acceptance of a revision before staff confirmation", () => {
+    expect(transitionServiceRequest("requested", "beginReview")).toBe(
+      "under_review",
+    );
+    expect(transitionServiceRequest("under_review", "offerRevision")).toBe(
+      "revision_offered",
+    );
+    expect(() =>
+      transitionServiceRequest("revision_offered", "confirm"),
+    ).toThrow(InvalidTransitionError);
+    expect(transitionServiceRequest("revision_offered", "acceptRevision")).toBe(
+      "customer_accepted",
+    );
+    expect(transitionServiceRequest("customer_accepted", "confirm")).toBe(
+      "confirmed",
+    );
+  });
 
   it("keeps cancelled and declined requests terminal", () => {
     expect(() => transitionServiceRequest("cancelled", "beginReview")).toThrow(
@@ -69,9 +66,7 @@ describe("appointment lifecycle", () => {
 });
 
 describe("calculateQuote", () => {
-  it(
-    "keeps supplier cost, rounded markup, labor, and customer total itemized",
-    () => {
+  it("keeps supplier cost, rounded markup, labor, and customer total itemized", () => {
     const quote = calculateQuote(
       [
         {
@@ -177,9 +172,7 @@ describe("createPartOfferObservation", () => {
     ).toThrow(RangeError);
   });
 
-  it(
-    "keeps unavailable and no-match results distinct from an empty success",
-    () => {
+  it("keeps unavailable and no-match results distinct from an empty success", () => {
     expect(
       createPartOfferObservation({
         source: "live",
