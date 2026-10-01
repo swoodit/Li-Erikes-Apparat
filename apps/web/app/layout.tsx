@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Li-Erikes Apparat",
-  description: "Automotive workshop operations platform",
+  title: "Parts request | Li-Erikes Apparat",
+  description: "Compare compatible parts offers before a garage purchase.",
 };
 
 export default function RootLayout({
