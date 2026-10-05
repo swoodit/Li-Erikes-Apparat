@@ -7,11 +7,15 @@ import {
   type AuthenticationOptions,
   UnauthenticatedError,
 } from "./plugins/auth.js";
-import { registerTibberRoutes } from "./tibber.js";
+import {
+  registerTibberRoutes,
+  type TibberRouteOptions,
+} from "./tibber.js";
 
 export type BuildAppOptions = Readonly<{
   auth?: AuthenticationOptions;
   tibber?: TibberGateway | null;
+  tibberRoutes?: TibberRouteOptions;
 }>;
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
@@ -31,6 +35,6 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   });
 
   app.get("/health", async () => ({ status: "ok" as const }));
-  registerTibberRoutes(app, options.tibber);
+  registerTibberRoutes(app, options.tibber, options.tibberRoutes);
   return app;
 }
