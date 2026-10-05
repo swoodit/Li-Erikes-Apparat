@@ -195,6 +195,32 @@ describe("Tibber energy routes", () => {
     });
   });
 
+  it("uses the configured default home without relying on API order", async () => {
+    let homesCalls = 0;
+    const app = buildApp({
+      tibber: fakeGateway({
+        homes: () => {
+          homesCalls += 1;
+        },
+      }),
+      tibberRoutes: {
+        clock: () => new Date("2026-10-05T19:50:00+02:00"),
+        defaultHomeId: "li-erikes-home",
+        homeEnergyApiKey,
+      },
+    });
+
+    const response = await app.inject({
+      headers: authorizedHeaders(),
+      method: "GET",
+      url: "/api/energy/tibber/prices",
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().id).toBe("li-erikes-home");
+    expect(homesCalls).toBe(0);
+  });
+
   it("caches home lookup and price schedules", async () => {
     let homesCalls = 0;
     let priceCalls = 0;
