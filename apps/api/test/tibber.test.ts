@@ -5,30 +5,61 @@ import {
   TibberClient,
   type TibberFetch,
   type TibberGateway,
+  type TibberPriceResponse,
 } from "../src/integrations/tibber";
 
-function fakeGateway(): TibberGateway {
+const homeEnergyApiKey = "test-home-energy-key";
+
+function fakeGateway(counters?: {
+  homes?: () => void;
+  prices?: () => void;
+}): TibberGateway {
   return {
-    homes: async () => [{ id: "home-1", appNickname: "Home" }],
-    prices: async (homeId) => ({
-      id: homeId,
-      currentSubscription: {
-        id: "subscription-1",
-        status: "RUNNING",
-        priceInfo: {
-          current: {
-            total: 0.5,
-            energy: 0.3,
-            tax: 0.2,
-            startsAt: "2026-10-05T19:45:00+02:00",
-            currency: "SEK",
-            level: "CHEAP",
+    homes: async () => {
+      counters?.homes?.();
+      return [{ id: "home-1", appNickname: "Home" }];
+    },
+    prices: async (homeId): Promise<TibberPriceResponse> => {
+      counters?.prices?.();
+      return {
+        id: homeId,
+        currentSubscription: {
+          id: "subscription-1",
+          status: "RUNNING",
+          priceInfo: {
+            current: null,
+            today: [
+              {
+                total: 0.5,
+                energy: 0.3,
+                tax: 0.2,
+                startsAt: "2026-10-05T19:45:00+02:00",
+                currency: "SEK",
+                level: "CHEAP",
+              },
+              {
+                total: 0.8,
+                energy: 0.6,
+                tax: 0.2,
+                startsAt: "2026-10-05T20:00:00+02:00",
+                currency: "SEK",
+                level: "NORMAL",
+              },
+            ],
+            tomorrow: [
+              {
+                total: 0.4,
+                energy: 0.2,
+                tax: 0.2,
+                startsAt: "2026-10-06T00:00:00+02:00",
+                currency: "SEK",
+                level: "CHEAP",
+              },
+            ],
           },
-          today: [],
-          tomorrow: [],
         },
-      },
-    }),
+      };
+    },
     consumption: async (homeId, days) => ({
       id: homeId,
       consumption: {
@@ -42,6 +73,10 @@ function fakeGateway(): TibberGateway {
       },
     }),
   };
+}
+
+function authorizedHeaders() {
+  return { "x-home-energy-key": homeEnergyApiKey };
 }
 
 describe("TibberClient", () => {
@@ -103,21 +138,44 @@ describe("TibberClient", () => {
 });
 
 describe("Tibber energy routes", () => {
-  it("reports missing configuration without a token", async () => {
-    const response = await buildApp({ tibber: null }).inject({
+  it("reports whether Tibber and route protection are configured", async () => {
+    const response = await buildApp({
+      tibber: fakeGateway(),
+      tibberRoutes: { homeEnergyApiKey },
+    }).inject({
       method: "GET",
       url: "/api/energy/tibber/status",
     });
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
-      configured: false,
-      connected: false,
+      configured: true,
+      protected: true,
     });
   });
 
-  it("uses the first visible home for prices", async () => {
-    const response = await buildApp({ tibber: fakeGateway() }).inject({
+  it("rejects account-level Tibber data without authentication", async () => {
+    const response = await buildApp({
+      tibber: fakeGateway(),
+      tibberRoutes: { homeEnergyApiKey },
+    }).inject({
+      method: "GET",
+      url: "/api/energy/tibber/homes",
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({ error: "unauthenticated" });
+  });
+
+  it("uses the configured home-energy key for account routes", async () => {
+    const response = await buildApp({
+      tibber: fakeGateway(),
+      tibberRoutes: {
+        clock: () => new Date("2026-10-05T19:50:00+02:00"),
+        homeEnergyApiKey,
+      },
+    }).inject({
+      headers: authorizedHeaders(),
       method: "GET",
       url: "/api/energy/tibber/prices",
     });
@@ -137,8 +195,43 @@ describe("Tibber energy routes", () => {
     });
   });
 
+  it("caches home lookup and price schedules", async () => {
+    let homesCalls = 0;
+    let priceCalls = 0;
+    const app = buildApp({
+      tibber: fakeGateway({
+        homes: () => {
+          homesCalls += 1;
+        },
+        prices: () => {
+          priceCalls += 1;
+        },
+      }),
+      tibberRoutes: {
+        clock: () => new Date("2026-10-05T19:50:00+02:00"),
+        homeEnergyApiKey,
+      },
+    });
+
+    for (let index = 0; index < 2; index += 1) {
+      const response = await app.inject({
+        headers: authorizedHeaders(),
+        method: "GET",
+        url: "/api/energy/tibber/prices",
+      });
+      expect(response.statusCode).toBe(200);
+    }
+
+    expect(homesCalls).toBe(1);
+    expect(priceCalls).toBe(1);
+  });
+
   it("validates the daily consumption window", async () => {
-    const response = await buildApp({ tibber: fakeGateway() }).inject({
+    const response = await buildApp({
+      tibber: fakeGateway(),
+      tibberRoutes: { homeEnergyApiKey },
+    }).inject({
+      headers: authorizedHeaders(),
       method: "GET",
       url: "/api/energy/tibber/consumption?days=32",
     });
