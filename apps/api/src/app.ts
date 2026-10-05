@@ -1,14 +1,17 @@
 import Fastify from "fastify";
 import type { FastifyInstance } from "fastify";
+import type { TibberGateway } from "./integrations/tibber.js";
 import {
   AuthorizationError,
   configureAuthentication,
   type AuthenticationOptions,
   UnauthenticatedError,
 } from "./plugins/auth.js";
+import { registerTibberRoutes } from "./tibber.js";
 
 export type BuildAppOptions = Readonly<{
   auth?: AuthenticationOptions;
+  tibber?: TibberGateway | null;
 }>;
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
@@ -26,6 +29,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     }
     return reply.send(error);
   });
+
   app.get("/health", async () => ({ status: "ok" as const }));
+  registerTibberRoutes(app, options.tibber);
   return app;
 }
