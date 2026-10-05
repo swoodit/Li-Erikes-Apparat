@@ -12,6 +12,7 @@ import {
   type TibberPrice,
   type TibberPriceResponse,
 } from "./integrations/tibber.js";
+import { buildEnergyAdvice } from "./energy-intelligence.js";
 import { UnauthenticatedError } from "./plugins/auth.js";
 import { requireRole } from "./security/authorize.js";
 
@@ -305,6 +306,27 @@ export function registerTibberRoutes(
       try {
         const homeId = await resolveHomeId(request.query.homeId);
         return await prices(homeId);
+      } catch (error) {
+        return tibberFailure(reply, error);
+      }
+    },
+  );
+
+  app.get<{
+    Querystring: { homeId?: string };
+  }>(
+    "/api/energy/tibber/advice",
+    { preHandler: requireTibberAccess },
+    async (request, reply) => {
+      if (client === null) {
+        return reply.status(503).send({
+          error: "tibber_not_configured",
+        });
+      }
+
+      try {
+        const homeId = await resolveHomeId(request.query.homeId);
+        return buildEnergyAdvice(await prices(homeId), clock());
       } catch (error) {
         return tibberFailure(reply, error);
       }
