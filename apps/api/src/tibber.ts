@@ -21,6 +21,7 @@ const PRICE_RETRY_CACHE_MS = 60 * 60 * 1000;
 
 export type TibberRouteOptions = Readonly<{
   clock?: () => Date;
+  defaultHomeId?: string | null;
   homeCacheMaxAgeMs?: number;
   homeEnergyApiKey?: string | null;
   priceCacheMaxAgeMs?: number;
@@ -43,16 +44,23 @@ function tibberFromEnvironment(): TibberGateway | null {
   });
 }
 
-function configuredHomeEnergyKey(
+function configuredValue(
   provided: string | null | undefined,
+  environmentValue: string | undefined,
 ): string | null {
   if (provided !== undefined) {
     const value = provided?.trim() ?? "";
     return value.length > 0 ? value : null;
   }
 
-  const value = process.env.HOME_ENERGY_API_KEY?.trim() ?? "";
+  const value = environmentValue?.trim() ?? "";
   return value.length > 0 ? value : null;
+}
+
+function configuredHomeEnergyKey(
+  provided: string | null | undefined,
+): string | null {
+  return configuredValue(provided, process.env.HOME_ENERGY_API_KEY);
 }
 
 function safeSecretEqual(actual: string, expected: string): boolean {
@@ -190,6 +198,10 @@ export function registerTibberRoutes(
   const homeEnergyApiKey = configuredHomeEnergyKey(
     options.homeEnergyApiKey,
   );
+  const defaultHomeId = configuredValue(
+    options.defaultHomeId,
+    process.env.TIBBER_HOME_ID,
+  );
   const requireTibberAccess = makeAccessGuard(app, homeEnergyApiKey);
 
   let homesCache: TimedCache<readonly TibberHome[]> | null = null;
@@ -219,6 +231,10 @@ export function registerTibberRoutes(
     const requested = requestedHomeId?.trim();
     if (requested !== undefined && requested.length > 0) {
       return requested;
+    }
+
+    if (defaultHomeId !== null) {
+      return defaultHomeId;
     }
 
     const visibleHomes = await homes();
