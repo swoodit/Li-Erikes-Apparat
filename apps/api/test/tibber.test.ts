@@ -221,6 +221,29 @@ describe("Tibber energy routes", () => {
     expect(homesCalls).toBe(0);
   });
 
+  it("returns protected energy advice from the cached price schedule", async () => {
+    const response = await buildApp({
+      tibber: fakeGateway(),
+      tibberRoutes: {
+        clock: () => new Date("2026-10-05T19:50:00+02:00"),
+        defaultHomeId: "home-1",
+        homeEnergyApiKey,
+      },
+    }).inject({
+      headers: authorizedHeaders(),
+      method: "GET",
+      url: "/api/energy/tibber/advice",
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      homeId: "home-1",
+      recommendation: {
+        action: "neutral",
+      },
+    });
+  });
+
   it("caches home lookup and price schedules", async () => {
     let homesCalls = 0;
     let priceCalls = 0;
